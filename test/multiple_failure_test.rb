@@ -44,7 +44,6 @@ class MultipleFailureTest < Test::Unit::TestCase
     assert !Resque.redis.exists(key)
   end
 
-
   def test_errors_are_suppressed_up_to_retry_limit
     Resque.enqueue(LimitThreeJob)
     3.times do
@@ -52,6 +51,18 @@ class MultipleFailureTest < Test::Unit::TestCase
     end
 
     assert_equal 0, MockFailureBackend.errors.size
+  end
+
+  def test_failure_is_passed_on_when_job_class_not_found
+    new_job_class = Class.new(LimitThreeJob).tap { |klass| klass.send(:instance_variable_set, :@queue, LimitThreeJob.instance_variable_get(:@queue)) }
+    Object.send(:const_set, 'LimitThreeJobTemp', new_job_class)
+    Resque.enqueue(LimitThreeJobTemp)
+
+    Object.send(:remove_const, 'LimitThreeJobTemp')
+    perform_next_job(@worker)
+
+    assert_equal MockFailureBackend.errors.count, 1
+    assert MockFailureBackend.errors.first =~ /uninitialized constant LimitThreeJobTemp/
   end
 
   def test_errors_are_logged_after_retry_limit

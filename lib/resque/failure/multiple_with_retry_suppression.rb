@@ -67,6 +67,8 @@ module Resque
 
       def retryable?
         klass.respond_to?(:redis_retry_key)
+      rescue NameError
+        false
       end
 
       def retrying?
