@@ -421,13 +421,26 @@ module Resque
         end
         @on_failure_retry_hook_already_called = true
 
-        robot_action, robot_arguments = RobotRules.action_and_arguments(job, exception, args)
+        robot_action, robot_arguments = begin
+          RobotRules.action_and_arguments(self, exception, args)
+        rescue => e
+          # Errors raised in here might be dangerous, causing jobs to disappear or something.
+          # I don't know that for a fact, but similar things have happened. Safety first!
+          log_message "RobotRules ERROR: #{e.to_s}"
+          if ENV['RESQUE_RETRY_DEBUG']
+            raise
+          else
+            [nil, []]
+          end
+        end
+
         if robot_action == :clear
           Resque.redis.set(redis_retry_key(*args), -9999999)
           log_message 'robot says to clear', args, exception
         elsif robot_action == :retry_increment_retry_attempt
-          Resque.redis.incr(redis_retry_key(*args), robot_arguments.first)
-        elsif robot_says_to_do == :retry || retry_criteria_valid?(exception, *args)
+          Resque.redis.incr(redis_retry_key(*args), (robot_arguments.first.to_i rescue 1))
+          try_again(exception, *args)
+        elsif robot_action == :retry || retry_criteria_valid?(exception, *args)
           try_again(exception, *args)
         else
           log_message 'retry criteria not sufficient for retry', args, exception

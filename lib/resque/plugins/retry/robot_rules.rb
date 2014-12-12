@@ -1,5 +1,6 @@
 require 'time'
 require 'hashie/mash'
+require 'damnl'
 
 module Resque::Plugins::Retry
   module RobotRules
@@ -11,9 +12,11 @@ module Resque::Plugins::Retry
         # RobotRules.rules should be in a before_fork_hook, so we an do this there and save time later.
 
         if action.is_a?(Array) && RobotRules::ACTIONS.map(&:to_s).include?(action.first)
-          self.action = action.to_sym
+          self.action[0] = action[0].to_sym
+        elsif action.is_a?(String) && RobotRules::ACTIONS.map(&:to_s).include?(action)
+          self.action = [action.to_sym]
         else
-          self.action = nil
+          self.action = [nil]
         end
 
         # Precompile regexes
@@ -39,7 +42,6 @@ module Resque::Plugins::Retry
         return false if exception_message_regex && ! (exception.message =~ exception_message_regex)
         return false if expiry && Time.now > expiry
         return false if args_json_regex && ! (args.to_json =~ args_json_regex)
-        return false if job.retry_limit_reached? && action.first.to_s.include?('retry')
         return false if percent_chance && rand > percent_chance
         return true
       end
@@ -52,19 +54,25 @@ module Resque::Plugins::Retry
 
     ACTIONS = [:retry, :clear, :retry_increment_retry_attempt]
 
-    def rules
+    def self.rules
       Damnl.get('resque_retry_robot_rules', default: '[]') do |rs|
-        rs.map { |rule_hash| Rule.new(hash) }
+        rs.map { |rule_hash| Rule.new(rule_hash) }
       end
     end
 
-    # returns an ACTION, or nil
-    # TODO: built in max_retyr here
+    # returns [action, arguments_array_or_nil], or [nil, nil]
     def self.action_and_arguments(job, exception, args)
-      rules.each do
-        return rule.action  if rule.match?(job, exception, args)
+      rules.each do |rule|
+        if rule.match?(job, exception, args)
+          if (rule.action.first == :retry || rule.action.first == :retry_increment_retry_attempt) && job.retry_limit_reached?
+            # Don't retry a job which has reached its retry limit.
+            return [nil]
+          else
+            return rule.action
+          end
+        end
       end
-      nil
+      [nil]
     end
 
   end

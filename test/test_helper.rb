@@ -9,7 +9,6 @@ require 'minitest/pride'
 require 'rack/test'
 require 'mocha/setup'
 
-# Run code coverage in MRI 1.9 only.
 if RUBY_VERSION >= '1.9' && RUBY_ENGINE == 'ruby'
   require 'simplecov'
   SimpleCov.start do
@@ -45,6 +44,12 @@ puts "Starting redis for testing at localhost:9736..."
 `redis-server #{dir}/redis-test.conf`
 Resque.redis = '127.0.0.1:9736'
 
+ENV['RESQUE_RETRY_DEBUG'] = 'true'
+Damnl.configure do |d|
+  d.redis = Redis::Namespace.new('damnl', redis: Resque.redis)
+end
+
+# Run code coverage in MRI 1.9 only.
 # Test helpers
 class MiniTest::Unit::TestCase
   def perform_next_job(worker, &block)
