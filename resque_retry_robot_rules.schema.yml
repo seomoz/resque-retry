@@ -1,0 +1,64 @@
+---
+title: Rules
+description: Rules for processing failed jobs. Rules are processed from top to bottom until a rule matching the failed job has been found. When a job fails, the first rule for which the job matches its criteria will be selection, and its action run. If no rule matches then we will fallback to normal processing (retry or failure handled by resque-retry as normal). If, however, a rule matches and the action is "retry" or "retry_inrement_retry_attempt", and the retry limit for the class has already been reached, AND an explicit_retry is not given, it will not retry (in accordance with normal resque_retry workings) -- this is to help avoid infinite retry.
+type: array
+format: tabs
+options:
+  disable_collapse: true
+items:
+  type: object
+  title: Rule
+  headerTemplate: ! '{{self.name}}'
+  description: A rule consists of: 1) an action (and optional action_args), and 2) criteria. For a failed job to match a rule, all of the given criteria must match. (You can also not give any criteria, which would match any job).
+  properties:
+    action:
+      type: string
+      required: true
+      description: What to do with the failed job when it matches this rules critera. Options: default -- handle as normal with resque-retry (don't look at any further rules). clear -- clear the job/do not send to the failed queue or retry. retry -- retry the job. retry_increment_retry_attempt -- retry but increment the retry_attempt.
+      enum:
+      - default
+      - clear
+      - retry
+      - retry_increment_retry_attempt
+    action_args:
+      type: array
+      required: false
+      description: if given, an array of arguments to accompany the the action. For example, if action is 'retry_increment_retry_attempt', the (single) argument is a number which will be added to the job's retry_attempt when the job is retried.
+      # items:
+      #   type:
+      #     oneOf:
+      #     - string
+      #     - number
+      # Free form
+    class_regex:
+      type: string
+      required: false
+      description: A regex to match against the job class
+    exception_class_regex:
+      type: string
+      required: false
+      description: A regex to match against the exception's class
+    exception_message_regex:
+      type: string
+      required: false
+      description: A regex to match against the exception's message
+    expiry:
+      type: string
+      required: false
+      description: If given, a date time after which the rule will be ignored. Processed with Time.parse -- example: "2015-12-23T04:04:32Z" -- the rule will only match before this date.
+    args_json_regex:
+      type: string
+      required: false
+      description: The arguments will be turned into JSON and matched against this regex.
+    retry_limit:
+      type: integer
+      required: false
+      description: Don't match if the job retry_attempt is greater than this. Note that in this case further rules will still be checked.
+    chance:
+      type: number
+      required: false
+      description: Chance that this rule will fire assuming all other criteria match. This turns the rule into a randomly apply rule, allowing us to do certain things for a percentage of the jobs.
+      minimum: 0
+      maximum: 1
+
+

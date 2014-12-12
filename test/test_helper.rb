@@ -45,6 +45,11 @@ puts "Starting redis for testing at localhost:9736..."
 `redis-server #{dir}/redis-test.conf`
 Resque.redis = '127.0.0.1:9736'
 
+ENV['RESQUE_RETRY_DEBUG'] = 'true'
+Damnl.configure do |d|
+  d.redis = Redis::Namespace.new('damnl', redis: Resque.redis)
+end
+
 # Mock failure backend for testing MultipleWithRetrySuppression
 class MockFailureBackend < Resque::Failure::Base
   class << self
