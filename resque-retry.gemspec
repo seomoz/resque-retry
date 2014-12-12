@@ -31,6 +31,8 @@ Gem::Specification.new do |s|
 
   s.add_dependency('resque', '~> 1.25')
   s.add_dependency('resque-scheduler', '~> 3.0')
+  s.add_dependency('damnl')
+  s.add_dependency('hashie')
 
   s.add_development_dependency('rake', '~> 10.1')
   s.add_development_dependency('minitest', '~> 4.0')

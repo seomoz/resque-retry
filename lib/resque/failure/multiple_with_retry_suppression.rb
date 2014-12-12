@@ -88,7 +88,22 @@ module Resque
       end
 
       def retrying?
-        Resque.redis.exists(retry_key)
+        Resque.redis.get(retry_key).tap do |val|
+          # Any value less than -1 (-3 to be on safe side) means
+          # It's received a "clear" from the RobotRules.
+          # count it as retying for our purposes -- don't send down
+          # to other failure backens -- but clean up
+          #
+          # If we have many identical jobs AND an inconsistent
+          # rule (e.g. with random number) it's possible
+          # that other jobs could be incrementing the negative value
+          # and here we essentially move it back to 0. So some jobs
+          # may be retried extra rimes. This is a very rare
+          # scenario though.
+          if val.to_i < -3
+            Resque.redis.del retry_key
+          end
+        end
       end
 
       def cleanup_retry_failure_log!

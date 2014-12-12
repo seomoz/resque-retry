@@ -1,5 +1,6 @@
 require 'digest/sha1'
 require 'resque/plugins/retry/logging'
+require 'resque/plugins/retry/robot_rules'
 
 module Resque
   module Plugins
@@ -418,15 +419,20 @@ module Resque
           log_message 'on_failure_retry_hook_already_called', args, exception
           return
         end
+        @on_failure_retry_hook_already_called = true
 
-        if retry_criteria_valid?(exception, *args)
+        robot_action, robot_arguments = RobotRules.action_and_arguments(job, exception, args)
+        if robot_action == :clear
+          Resque.redis.set(redis_retry_key(*args), -9999999)
+          log_message 'robot says to clear', args, exception
+        elsif robot_action == :retry_increment_retry_attempt
+          Resque.redis.incr(redis_retry_key(*args), robot_arguments.first)
+        elsif robot_says_to_do == :retry || retry_criteria_valid?(exception, *args)
           try_again(exception, *args)
         else
           log_message 'retry criteria not sufficient for retry', args, exception
           clean_retry_key(*args)
         end
-
-        @on_failure_retry_hook_already_called = true
       end
 
       # Used to perform retry criteria check blocks under the job instance's context
