@@ -1,0 +1,10 @@
+- comment: retry FooBar jobs that fail with WazBat error, 50% chance of retrying, until January 15 2015
+  action: retry
+  class_regex: ^FooBar$
+  exception_class_regex: ^WazBat$
+  expiry: 2015-01-15
+  chance: 0.5
+- comment: ignore other Foobar jobs (until January 15 2015)
+  action: clear
+  class_regex: ^FooBar$
+  expiry: 2015-01-15
