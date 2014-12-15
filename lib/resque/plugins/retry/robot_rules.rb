@@ -11,12 +11,16 @@ module Resque::Plugins::Retry
         # pre-process rules as we are going to use them.
         # RobotRules.rules should be in a before_fork_hook, so we an do this there and save time later.
 
-        if action.is_a?(Array) && RobotRules::ACTIONS.map(&:to_s).include?(action.first)
-          self.action[0] = action[0].to_sym
-        elsif action.is_a?(String) && RobotRules::ACTIONS.map(&:to_s).include?(action)
-          self.action = [action.to_sym]
+        if action_args.nil?
+          self.action_args = []
         else
-          self.action = [nil]
+          self.action_args = Array(self.action_args)
+        end
+
+        if RobotRules::ACTIONS.map(&:to_s).include?(action)
+          self.action = action.to_sym
+        else
+          self.action = nil
         end
 
         # Precompile regexes
@@ -36,7 +40,7 @@ module Resque::Plugins::Retry
         return false if exception_message_regex && ! (exception.message =~ exception_message_regex)
         return false if expiry && Time.now > expiry
         return false if args_json_regex && ! (args.to_json =~ args_json_regex)
-        return false if percent_chance && rand > percent_chance
+        return false if chance && rand > chance
         return true
       end
     end
@@ -53,15 +57,15 @@ module Resque::Plugins::Retry
     def self.action_and_arguments(job, exception, args)
       rules.each do |rule|
         if rule.match?(job, exception, args)
-          if (rule.action.first == :retry || rule.action.first == :retry_increment_retry_attempt) && job.retry_limit_reached?
+          if (rule.action == :retry || rule.action == :retry_increment_retry_attempt) && job.retry_limit_reached?
             # Don't retry a job which has reached its retry limit.
-            return [nil]
+            return [nil, []]
           else
-            return rule.action
+            return [rule.action, rule.action_args]
           end
         end
       end
-      [nil]
+      [nil, []]
     end
 
   end

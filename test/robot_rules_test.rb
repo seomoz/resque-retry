@@ -14,8 +14,9 @@ class RobotRulesTest < MiniTest::Unit::TestCase
       {'args_json_regex' => ',"okay",', 'expiry' => '2086-10-01T21:14:21', 'action' => 'bogus_action_turned_into_nil'},
       {'class_regex' => '[oO]bject', 'exception_class_regex' => '^[sS]tandard', 'action' => 'retry'},
       {'exception_message_regex' => 'h.llo', 'expiry' => 'bogus_so_ignored', 'action' => 'clear'},
-      {'args_json_regex' => ',"ok",', 'expiry' => '2086-10-01T21:14:21', 'action' => ['retry_increment_retry_attempt', 2]},
-      {'expiry' => '2014-12-09-T14:24:23', 'action' => ['retry_increment_retry_attempt', 99]} # this will never trigger
+      {'chance' => 1, 'args_json_regex' => ',"ok",', 'expiry' => '2086-10-01T21:14:21', 'action' => 'retry_increment_retry_attempt', 'action_args' => [2]},
+      {'chance' => 0, 'action' => 'retry_increment_retry_attempt', 'action_args' => [99]}, # this will never trigger
+      {'expiry' => '2014-12-09-T14:24:23', 'action' => 'retry_increment_retry_attempt', 'action_args' => [99]} # this will never trigger
     ].to_yaml)
 
     job1 = MyObject.new(false)
@@ -24,14 +25,14 @@ class RobotRulesTest < MiniTest::Unit::TestCase
     exception1 = StandardError.new('foo')
     exception2 = Exception.new('well hello')
 
-    assert_equal [:retry], Resque::Plugins::Retry::RobotRules.action_and_arguments(job1, exception1, [])
-    assert_equal [nil], Resque::Plugins::Retry::RobotRules.action_and_arguments(job1, exception1, [1,'okay',2])
-    assert_equal [:clear], Resque::Plugins::Retry::RobotRules.action_and_arguments(job1, exception2, [])
-    assert_equal [nil], Resque::Plugins::Retry::RobotRules.action_and_arguments(job2, exception1, [])
-    assert_equal [:clear], Resque::Plugins::Retry::RobotRules.action_and_arguments(job2, exception2, [])
-    assert_equal [nil], Resque::Plugins::Retry::RobotRules.action_and_arguments(job3, exception1, [])
-    assert_equal [:retry_increment_retry_attempt, 2], Resque::Plugins::Retry::RobotRules.action_and_arguments(job3, exception1, [1,'ok',2])
-    assert_equal [:clear], Resque::Plugins::Retry::RobotRules.action_and_arguments(job3, exception2, [])
+    assert_equal [:retry,[]], Resque::Plugins::Retry::RobotRules.action_and_arguments(job1, exception1, [])
+    assert_equal [nil,[]], Resque::Plugins::Retry::RobotRules.action_and_arguments(job1, exception1, [1,'okay',2])
+    assert_equal [:clear,[]], Resque::Plugins::Retry::RobotRules.action_and_arguments(job1, exception2, [])
+    assert_equal [nil,[]], Resque::Plugins::Retry::RobotRules.action_and_arguments(job2, exception1, [])
+    assert_equal [:clear,[]], Resque::Plugins::Retry::RobotRules.action_and_arguments(job2, exception2, [])
+    assert_equal [nil,[]], Resque::Plugins::Retry::RobotRules.action_and_arguments(job3, exception1, [])
+    assert_equal [:retry_increment_retry_attempt, [2]], Resque::Plugins::Retry::RobotRules.action_and_arguments(job3, exception1, [1,'ok',2])
+    assert_equal [:clear, []], Resque::Plugins::Retry::RobotRules.action_and_arguments(job3, exception2, [])
   end
 
   def teardown
