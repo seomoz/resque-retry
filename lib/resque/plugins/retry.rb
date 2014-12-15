@@ -438,7 +438,7 @@ module Resque
           Resque.redis.set(redis_retry_key(*args), -9999999)
           log_message 'robot says to clear', args, exception
         elsif robot_action == :retry_increment_retry_attempt
-          Resque.redis.incr(redis_retry_key(*args), (robot_arguments.first.to_i rescue 1))
+          Resque.redis.incrby(redis_retry_key(*args), (robot_arguments.first.to_i rescue 1))
           try_again(exception, *args)
         elsif robot_action == :retry || retry_criteria_valid?(exception, *args)
           try_again(exception, *args)
