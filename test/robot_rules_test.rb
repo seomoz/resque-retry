@@ -8,7 +8,17 @@ class RobotRulesTest < MiniTest::Unit::TestCase
     Resque.redis.flushall
   end
 
-  def test_rules
+  def test_bad_rules_doesnt_crash
+    Damnl.send(:cached_versions)['resque_retry_robot_rules'] = -1 # Hack to force reloading since we cleared Redis
+    Damnl.set('resque_retry_robot_rules', [
+      {'args_json_regex' => 1, 'expiry' => /3$:@L#@$:/, 'action' => -1.5, 'action_args' => true, 'exception_message_regex' => '[bad regex',
+       'exception_class_regex' => 123, 'class_regex' => 'bad regex]]))/\\1', 'chance' => 'ok', 'bogus' => 'no'}
+    ].to_yaml)
+
+    assert_equal [nil,[]], Resque::Plugins::Retry::RobotRules.action_and_arguments(MyObject.new(true), StandardError.new('foo'), [1,'okay'])
+  end
+
+  def test_match
     Damnl.send(:cached_versions)['resque_retry_robot_rules'] = -1 # Hack to force reloading since we cleared Redis
     Damnl.set('resque_retry_robot_rules', [
       {'args_json_regex' => ',"okay",', 'expiry' => '2086-10-01T21:14:21', 'action' => 'bogus_action_turned_into_nil'},

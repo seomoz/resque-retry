@@ -26,7 +26,7 @@ module Resque::Plugins::Retry
         # Precompile regexes
         [:class_regex, :exception_class_regex, :exception_message_regex, :args_json_regex].each do |regex_name|
           if send(regex_name)
-            send(:"#{regex_name}=", /#{send(regex_name)}/)
+            send(:"#{regex_name}=", (/#{send(regex_name)}/ rescue /!!!!RESQUE RETRY ROBOT RULES BAD REGEXP!!!!/))
           end
         end
 
