@@ -274,6 +274,15 @@ Or you can define the entire key by overriding `redis_retry_key`.
       end
     end
 
+### ROBOT RULES!
+Robot rules provide a way dynamically setting which jobs should be retried. When a job that extends `Resque::Plugin::Retry` fails, the robot rules are examined to see if any match the failed job. If they do, that action is taken. Robot rules are currently stored in [Damnl](https://github.com/seomoz/damnl) under the key "resque_retry_robot_rules" -- as such, you should force reading of the rules each time in a `before_fork_hook` to make sure that, when a job fails, the rules are in memory and do not have to be downloaded from Redis and decoded:
+
+```ruby
+Resque.before_fork { Resque::Plugins::Retry::RobotRules.rules }
+```
+
+See [resque_retry_robot_rules.schema.yml](resque_retry_robot_rules.schema.yml) for a full schema and list of available options; see [resque_retry_robot_rules.example.yml](resque_retry_robot_rules.example.yml) for an example robot rules configuration.
+
 Contributing/Pull Requests
 --------------------------
 
