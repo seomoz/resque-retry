@@ -88,7 +88,7 @@ module Resque
       end
 
       def retrying?
-        Resque.redis.get(retry_key).tap do |val|
+        !! Resque.redis.get(retry_key).tap do |val|
           # Any value less than -1 (-3 to be on safe side) means
           # It's received a "clear" from the RobotRules.
           # count it as retying for our purposes -- don't send down

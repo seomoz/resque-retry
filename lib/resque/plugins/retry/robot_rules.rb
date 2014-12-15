@@ -27,13 +27,7 @@ module Resque::Plugins::Retry
         end
 
         # Parse time
-        if expiry
-          begin
-            self.expiry = Time.parse(self.expiry)
-          rescue ArgumentError
-            self.expiry = nil
-          end
-        end
+        self.expiry = (Time.parse(self.expiry) rescue nil)  if expiry
       end
 
       def match?(job, exception, args)
@@ -44,11 +38,6 @@ module Resque::Plugins::Retry
         return false if args_json_regex && ! (args.to_json =~ args_json_regex)
         return false if percent_chance && rand > percent_chance
         return true
-      end
-
-      def action
-        @action || super.tap do |action|
-        end
       end
     end
 
