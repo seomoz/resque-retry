@@ -1,6 +1,6 @@
 ---
 title: Rules
-description: Rules for processing failed jobs. When a job fails, the first rule for which the job matches its criteria will be selection, and its action run. If no rule matches then we will fallback to normal processing (retry or failure handled by resque-retry as normal). If, however, a rule matches and the action is "retry" or "retry_inrement_retry_attempt", and the retry limit for the class has already been reached, it will not retry (in accordance with normal resque_retry workings).
+description: Rules for processing failed jobs. When a job fails, the first rule for which the job matches its criteria will be selection, and its action run. If no rule matches then we will fallback to normal processing (retry or failure handled by resque-retry as normal). If, however, a rule matches and the action is "retry" or "retry_inrement_retry_attempt", and the retry limit for the class has already been reached, AND an explicit_retry is not given, it will not retry (in accordance with normal resque_retry workings) -- this is to help avoid infinite retry.
 type: array
 format: tabs
 options:
@@ -50,6 +50,10 @@ items:
       type: string
       required: false
       description: The arguments will be turned into JSON and matched against this regex.
+    retry_limit:
+      type: integer
+      required: false
+      description: Don't match if the job retry_attempt is greater than this. Note that in this case further rules will still be checked.
     chance:
       type: number
       required: false

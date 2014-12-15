@@ -23,6 +23,9 @@ module Resque::Plugins::Retry
           self.action = nil
         end
 
+        self.chance = (chance.to_f rescue 0)  if chance
+        self.retry_limit = (retry_limit.to_i rescue 0)  if retry_limit
+
         # Precompile regexes
         [:class_regex, :exception_class_regex, :exception_message_regex, :args_json_regex].each do |regex_name|
           if send(regex_name)
@@ -41,6 +44,7 @@ module Resque::Plugins::Retry
         return false if expiry && Time.now > expiry
         return false if args_json_regex && ! (args.to_json =~ args_json_regex)
         return false if chance && rand > chance
+        return false if retry_limit && job.retry_attempt >= retry_limit
         return true
       end
     end
@@ -57,8 +61,8 @@ module Resque::Plugins::Retry
     def self.action_and_arguments(job, exception, args)
       rules.each do |rule|
         if rule.match?(job, exception, args)
-          if (rule.action == :retry || rule.action == :retry_increment_retry_attempt) && job.retry_limit_reached?
-            # Don't retry a job which has reached its retry limit.
+          if (rule.action == :retry || rule.action == :retry_increment_retry_attempt) && job.retry_limit_reached? && !rule.retry_limit
+            # Don't retry a job which has reached its retry limit... unless an explicit retry_limit is given.
             return [nil, []]
           else
             return [rule.action, rule.action_args]
