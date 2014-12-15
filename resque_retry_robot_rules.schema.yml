@@ -1,6 +1,6 @@
 ---
 title: Rules
-description: Rules for processing failed jobs. When a job fails, the first rule for which the job matches its criteria will be selection, and its action run. If no rule matches then we will fallback to normal processing (retry or failure handled by resque-retry as normal). If, however, a rule matches and the action is "retry" or "retry_inrement_retry_attempt", and the retry limit for the class has already been reached, AND an explicit_retry is not given, it will not retry (in accordance with normal resque_retry workings) -- this is to help avoid infinite retry.
+description: Rules for processing failed jobs. Rules are processed from top to bottom until a rule matching the failed job has been found. When a job fails, the first rule for which the job matches its criteria will be selection, and its action run. If no rule matches then we will fallback to normal processing (retry or failure handled by resque-retry as normal). If, however, a rule matches and the action is "retry" or "retry_inrement_retry_attempt", and the retry limit for the class has already been reached, AND an explicit_retry is not given, it will not retry (in accordance with normal resque_retry workings) -- this is to help avoid infinite retry.
 type: array
 format: tabs
 options:
