@@ -1,4 +1,4 @@
-require 'test_helper'
+require File.dirname(__FILE__) + '/test_helper'
 
 class RobotRulesRetryCriteriaTest < MiniTest::Unit::TestCase
   class RobotRulesMockFailureBackend < Resque::Failure::Base

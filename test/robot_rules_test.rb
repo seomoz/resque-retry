@@ -1,4 +1,4 @@
-require 'test_helper'
+require File.dirname(__FILE__) + '/test_helper'
 
 class RobotRulesTest < MiniTest::Unit::TestCase
   class MyObject < Struct.new(:retry_limit_reached?, :retry_attempt)

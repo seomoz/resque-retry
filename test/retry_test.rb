@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/test_helper'
 
-class RetryTest < Test::Unit::TestCase
+class RetryTest < MiniTest::Unit::TestCase
   def setup
     Resque.redis.flushall
     @worker = Resque::Worker.new(:testing)

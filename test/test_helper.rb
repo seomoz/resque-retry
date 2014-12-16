@@ -64,7 +64,7 @@ class MockFailureBackend < Resque::Failure::Base
 end
 
 # Test helpers
-class Test::Unit::TestCase
+class MiniTest::Unit::TestCase
   def perform_next_job(worker, &block)
     return unless job = @worker.reserve
     @worker.perform(job, &block)
