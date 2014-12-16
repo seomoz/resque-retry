@@ -94,6 +94,7 @@ class RobotRulesRetryCriteriaTest < MiniTest::Unit::TestCase
     assert_equal 0, Resque.info[:pending], 'pending jobs'
     assert_equal 0, RobotRulesMockFailureBackend.errors.count, 'jobs fallen through to failure backend'
     assert_equal 1, Resque.info[:processed], 'processed job'
+    assert_equal 0, Resque.redis.keys("*waz*").count # cleans up
   end
 
   def test_robot_rules_raises_exception_all_is_not_lost

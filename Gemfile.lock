@@ -27,7 +27,10 @@ GEM
     debugger-linecache (1.2.0)
     docile (1.1.5)
     hashie (3.3.2)
+    metaclass (0.0.4)
     minitest (4.7.5)
+    mocha (1.1.0)
+      metaclass (~> 0.0.1)
     mono_logger (1.1.0)
     multi_json (1.10.1)
     power_assert (0.2.2)
@@ -79,6 +82,7 @@ PLATFORMS
 DEPENDENCIES
   byebug
   damnl!
+  mocha (~> 1.0)
   rake
   resque-retry!
   simplecov (>= 0.3.0)

@@ -8,9 +8,8 @@ class ExponentialBackoffTest < MiniTest::Unit::TestCase
   end
 
   def test_resque_plugin_lint
-    assert_nothing_raised do
-      Resque::Plugin.lint(Resque::Plugins::ExponentialBackoff)
-    end
+    # will raise exception if were not a good plugin.
+    Resque::Plugin.lint(Resque::Plugins::ExponentialBackoff)
   end
 
   def test_default_backoff_strategy

@@ -6,6 +6,7 @@ require 'test/unit'
 require 'rubygems'
 require 'turn'
 require 'simplecov'
+require 'mocha/setup'
 
 SimpleCov.start do
   add_filter "/test/"
