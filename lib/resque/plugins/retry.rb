@@ -1,3 +1,5 @@
+require 'resque/plugins/retry/robot_rules'
+
 module Resque
   module Plugins
 
@@ -208,7 +210,24 @@ module Resque
       # Checks if our retry criteria is valid, if it is we try again.
       # Otherwise the retry attempt count is deleted from Redis.
       def on_failure_retry(exception, *args)
-        if retry_criteria_valid?(exception, *args)
+        robot_action, robot_arguments = begin
+          RobotRules.action_and_arguments(self, exception, args)
+        rescue
+          # Errors raised in here might be dangerous, causing jobs to disappear or something.
+          # I don't know that for a fact, but similar things have happened. Safety first!
+          if ENV['RESQUE_RETRY_DEBUG']
+            raise
+          else
+            [nil, []]
+          end
+        end
+
+        if robot_action == :clear
+          Resque.redis.set(redis_retry_key(*args), -9999999)
+        elsif robot_action == :retry_increment_retry_attempt
+          Resque.redis.incrby(redis_retry_key(*args), (robot_arguments.first.to_i rescue 1))
+          try_again(*args)
+        elsif robot_action == :retry || retry_criteria_valid?(exception, *args)
           try_again(*args)
         else
           Resque.redis.del(redis_retry_key(*args))

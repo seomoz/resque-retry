@@ -1,0 +1,91 @@
+GIT
+  remote: git@github.com:seomoz/damnl.git
+  revision: 4dc6b4b8f6db61b3fb9e19361e17323458f10714
+  specs:
+    damnl (0.0.2)
+      redis
+      sinatra
+
+PATH
+  remote: .
+  specs:
+    resque-retry (0.1.0)
+      damnl (>= 0.0.2)
+      hashie
+      resque (>= 1.8.0)
+      resque-scheduler (~> 1.8)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    ansi (1.4.3)
+    byebug (3.5.1)
+      columnize (~> 0.8)
+      debugger-linecache (~> 1.2)
+      slop (~> 3.6)
+    columnize (0.9.0)
+    debugger-linecache (1.2.0)
+    docile (1.1.5)
+    hashie (3.3.2)
+    metaclass (0.0.4)
+    minitest (4.7.5)
+    mocha (1.1.0)
+      metaclass (~> 0.0.1)
+    mono_logger (1.1.0)
+    multi_json (1.10.1)
+    power_assert (0.2.2)
+    rack (1.5.2)
+    rack-protection (1.5.3)
+      rack
+    rake (10.4.2)
+    redis (3.2.0)
+    redis-namespace (1.5.1)
+      redis (~> 3.0, >= 3.0.4)
+    resque (1.24.1)
+      mono_logger (~> 1.0)
+      multi_json (~> 1.0)
+      redis-namespace (~> 1.2)
+      sinatra (>= 0.9.2)
+      vegas (~> 0.1.2)
+    resque-scheduler (1.9.10)
+      redis (>= 2.0.1)
+      resque (>= 1.8.0, < 1.25.0)
+      rufus-scheduler
+    rufus-scheduler (3.0.9)
+      tzinfo
+    simplecov (0.9.1)
+      docile (~> 1.1.0)
+      multi_json (~> 1.0)
+      simplecov-html (~> 0.8.0)
+    simplecov-html (0.8.0)
+    sinatra (1.4.5)
+      rack (~> 1.4)
+      rack-protection (~> 1.4)
+      tilt (~> 1.3, >= 1.3.4)
+    slop (3.6.0)
+    test-unit (3.0.8)
+      power_assert
+    thread_safe (0.3.4)
+    tilt (1.4.1)
+    turn (0.9.7)
+      ansi
+      minitest (~> 4)
+    tzinfo (1.2.2)
+      thread_safe (~> 0.1)
+    vegas (0.1.11)
+      rack (>= 1.0.0)
+    yard (0.8.7.6)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  byebug
+  damnl!
+  mocha (~> 1.0)
+  rake
+  resque-retry!
+  simplecov (>= 0.3.0)
+  test-unit
+  turn
+  yard

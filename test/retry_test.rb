@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/test_helper'
 
-class RetryTest < Test::Unit::TestCase
+class RetryTest < MiniTest::Unit::TestCase
   def setup
     Resque.redis.flushall
     @worker = Resque::Worker.new(:testing)
@@ -8,9 +8,8 @@ class RetryTest < Test::Unit::TestCase
   end
 
   def test_resque_plugin_lint
-    assert_nothing_raised do
-      Resque::Plugin.lint(Resque::Plugins::Retry)
-    end
+    # will raise exception if were not a good plugin.
+    Resque::Plugin.lint(Resque::Plugins::Retry)
   end
 
   def test_default_settings
