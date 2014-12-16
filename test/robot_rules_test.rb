@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + '/test_helper'
 
 class RobotRulesTest < MiniTest::Unit::TestCase
-  class MyObject < Struct.new(:retry_limit_reached?, :retry_attempt)
+  class MyObject < Struct.new(:name, :retry_limit_reached?, :retry_attempt)
   end
 
   def setup
@@ -34,9 +34,9 @@ class RobotRulesTest < MiniTest::Unit::TestCase
       {'expiry' => '2014-12-09-T14:24:23', 'action' => 'retry_increment_retry_attempt', 'action_args' => [99]} # this will never trigger
     ].to_yaml)
 
-    job1 = MyObject.new(false, 10)
-    job2 = MyObject.new(true, 10)
-    job3 = Struct.new(:retry_limit_reached?, :retry_attempt).new(false, 10)
+    job1 = MyObject.new('MyObject', false, 10)
+    job2 = MyObject.new('MyObject', true, 10)
+    job3 = MyObject.new('Struct', false, 10)
     exception1 = StandardError.new('foo')
     exception2 = Exception.new('well hello')
 
@@ -49,8 +49,8 @@ class RobotRulesTest < MiniTest::Unit::TestCase
     assert_equal [:retry_increment_retry_attempt, [2]], Resque::Plugins::Retry::RobotRules.action_and_arguments(job3, exception1, [1,'ok',2])
     assert_equal [:clear, []], Resque::Plugins::Retry::RobotRules.action_and_arguments(job3, exception2, [])
 
-    job4 = MyObject.new(true, 499)
-    job5 = MyObject.new(true, 500)
+    job4 = MyObject.new('MyObject', true, 499)
+    job5 = MyObject.new('MyObject', true, 500)
     exception3 = StandardError.new('explicitretrylimit')
     assert_equal [:retry,[]], Resque::Plugins::Retry::RobotRules.action_and_arguments(job4, exception3, [])
     assert_equal [nil,[]], Resque::Plugins::Retry::RobotRules.action_and_arguments(job5, exception3, [])
