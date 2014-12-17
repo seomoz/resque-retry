@@ -16,7 +16,7 @@ module Resque
             if action_args.nil?
               self.action_args = []
             else
-              self.action_args = Array(self.action_args)
+              self.action_args = Array(action_args)
             end
 
             if RobotRules::ACTIONS.map(&:to_s).include?(action)
