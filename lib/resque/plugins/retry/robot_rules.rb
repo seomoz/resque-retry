@@ -38,7 +38,7 @@ module Resque::Plugins::Retry
       end
 
       def match?(job, exception, args)
-        return false if class_regex && ! (job.class.name =~ class_regex)
+        return false if class_regex && ! (job.name =~ class_regex)
         return false if exception_class_regex && ! (exception.class.name =~ exception_class_regex)
         return false if exception_message_regex && ! (exception.message =~ exception_message_regex)
         return false if expiry && Time.now > expiry
