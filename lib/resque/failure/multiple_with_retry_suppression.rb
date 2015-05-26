@@ -25,7 +25,7 @@ module Resque
       # Store the lastest failure information in redis, used by the web
       # interface.
       def save
-        if ! (retryable? && retrying?)
+        if exception.is_a?(Resque::DirtyExit) || ! (retryable? && retrying?)
           cleanup_retry_failure_log!
           super
         elsif retry_delay > 0
