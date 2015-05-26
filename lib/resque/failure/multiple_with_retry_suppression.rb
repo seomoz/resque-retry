@@ -33,7 +33,7 @@ module Resque
         retryable = retryable?
         job_being_retried = retryable && retrying?
 
-        if exception.is_a?(Resque::DirtyExit) || !job_being_retried
+        if !job_being_retried
           log_message "#{retryable ? '' : 'non-'}retriable job is not being retried - sending failure to superclass", args_from(payload), exception
           cleanup_retry_failure_log!
           super
