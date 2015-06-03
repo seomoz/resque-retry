@@ -31,6 +31,8 @@ Gem::Specification.new do |s|
 
   s.add_dependency('resque', '~> 1.25')
   s.add_dependency('resque-scheduler', '~> 3.0')
+  s.add_dependency('damnl', '>= 0.0.2')
+  s.add_dependency('hashie')
 
   s.add_development_dependency('rake', '~> 10.1')
   s.add_development_dependency('minitest', '~> 4.0')
@@ -39,4 +41,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency('json', '~> 1.8')
   s.add_development_dependency('simplecov', '~> 0.7')
   s.add_development_dependency('mocha', '~> 1.0')
+  s.add_development_dependency('byebug')
 end
