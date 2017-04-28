@@ -192,8 +192,9 @@ module Resque
       EXPIRE_AFTER = 1296000
       # expire keys after 15 days. expire for sure.
       # not sure why but we seem to have old junk hanging around.
-      # this is quickest way to patch it (until we can eventually
-      # move to qless...)
+      # Rather than investigate and fix it, for time reasons
+      # we'll just do this hack and expire the keys after a while.
+      # (This will do until we can eventually move to qless...)
 
       # Resque before_perform hook.
       #
@@ -201,7 +202,7 @@ module Resque
       def before_perform_retry(*args)
         retry_key = redis_retry_key(*args)
         Resque.redis.setnx(retry_key, -1)             # default to -1 if not set.
-        Resque.redis.expire(retry_key, EXPIRE_AFTER)
+        Resque.redis.expire(retry_key, EXPIRE_AFTER)  # hack see EXPIRE_AFTER above
         @retry_attempt = Resque.redis.incr(retry_key) # increment by 1.
       end
 
@@ -231,7 +232,7 @@ module Resque
 
         if robot_action == :clear
           Resque.redis.set(redis_retry_key(*args), -9999999)
-          Resque.redis.expire(retry_key, EXPIRE_AFTER)
+          Resque.redis.expire(retry_key, EXPIRE_AFTER) # hack see EXPIRE_AFTER above
         elsif robot_action == :retry_increment_retry_attempt
           Resque.redis.incrby(redis_retry_key(*args), (robot_arguments.first.to_i rescue 1))
           try_again(*args)
